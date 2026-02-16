@@ -1,5 +1,12 @@
 # bptree
 
+![Maven Central](https://img.shields.io/maven-central/v/io.github.edadma/bptree_sjs1_3)
+[![Last Commit](https://img.shields.io/github/last-commit/edadma/bptree)](https://github.com/edadma/bptree/commits)
+![GitHub](https://img.shields.io/github/license/edadma/bptree)
+![Scala Version](https://img.shields.io/badge/Scala-3.8.1-blue.svg)
+![ScalaJS Version](https://img.shields.io/badge/Scala.js-1.20.2-blue.svg)
+![Scala Native Version](https://img.shields.io/badge/Scala_Native-0.5.10-blue.svg)
+
 A general-purpose B+ tree library for Scala 3, cross-compiled to JVM, Scala.js, and Scala Native.
 
 ## Features
