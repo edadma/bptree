@@ -3,8 +3,11 @@ package io.github.edadma.bptree
 import scala.util.Random
 import scala.collection.mutable.HashSet
 
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class FileInsertionTests extends FileTestBase:
+
+class FileInsertionTests extends AnyFreeSpec with Matchers:
 
   "ascending insertion (order 3): on disk" in {
     val t = new FileBPlusTree[String, Any](newfile, 3)
@@ -134,7 +137,7 @@ class FileInsertionTests extends FileTestBase:
   }
 end FileInsertionTests
 
-class FileDeletionTests extends FileTestBase:
+class FileDeletionTests extends AnyFreeSpec with Matchers:
 
   "deletion (leaf merge, 2 level tree, first): on disk, order 3" in {
     val t = new FileBPlusTree[String, Any](newfile, 3)
@@ -373,7 +376,7 @@ class FileDeletionTests extends FileTestBase:
   }
 end FileDeletionTests
 
-class FileMultiOrderTests extends FileTestBase:
+class FileMultiOrderTests extends AnyFreeSpec with Matchers:
 
   val fileOrders = List(3, 4, 5, 6)
 
@@ -442,7 +445,7 @@ class FileMultiOrderTests extends FileTestBase:
     }
 end FileMultiOrderTests
 
-class FileStressTests extends FileTestBase:
+class FileStressTests extends AnyFreeSpec with Matchers:
 
   val fileTests = List(
     (3, 50),
@@ -499,7 +502,7 @@ class FileStressTests extends FileTestBase:
     }
 end FileStressTests
 
-class FileSpecificTests extends FileTestBase:
+class FileSpecificTests extends AnyFreeSpec with Matchers:
 
   val insertions = 30
 
