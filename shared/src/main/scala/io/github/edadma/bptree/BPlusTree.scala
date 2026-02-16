@@ -246,13 +246,21 @@ abstract class BPlusTree[K: Ordering, V]:
 
   /** Returns a bounded iterator over a range of key positions (node/index pairs) in the tree in descending sorted key order. */
   protected def reverseBoundedPositionIterator(bounds: (Bound, K)*): Iterator[(N, Int)] =
-    val ((loleaf, loindex), (hileaf, hiindex)) = boundsPreprocess(bounds, greatestLTE, greatestLT)
+    val ((loleaf0, loindex0), (hileaf0, hiindex0)) = boundsPreprocess(bounds, greatestLTE, greatestLT)
+
+    val hasLowerBound = bounds.exists { case (b, _) => b == Bound.Gt || b == Bound.Gte }
+    val hasUpperBound = bounds.exists { case (b, _) => b == Bound.Lt || b == Bound.Lte }
+
+    // When hi is (nul, 0) sentinel (no upper bound), start from the last element
+    val (hileaf, hiindex) = if !hasUpperBound then (last, lastlen - 1) else (hileaf0, hiindex0)
+    // When lo is (first, 0) sentinel (no lower bound), use nul so boundary never triggers
+    val (loleaf, loindex) = if !hasLowerBound then (nul, 0) else (loleaf0, loindex0)
 
     new AbstractIterator[(N, Int)]:
       var leaf: N = hileaf
       var index: Int = hiindex
 
-      def hasNext: Boolean = leaf != nul && index < nodeLength(leaf) && (leaf != loleaf || index < loindex)
+      def hasNext: Boolean = leaf != nul && index >= 0 && index < nodeLength(leaf) && (leaf != loleaf || index > loindex)
 
       def next(): (N, Int) =
         if hasNext then
