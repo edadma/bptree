@@ -51,7 +51,8 @@ lazy val bptree = crossProject(JSPlatform, JVMPlatform, NativePlatform)
         "-language:existentials",
         "-language:dynamics",
       ),
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.19" % "test",
+    libraryDependencies += "io.github.edadma" %%% "cross_platform" % "0.1.0",
+    libraryDependencies += "org.scalatest"    %%% "scalatest"      % "3.2.19" % "test",
     publishMavenStyle      := true,
     Test / publishArtifact := false,
   )

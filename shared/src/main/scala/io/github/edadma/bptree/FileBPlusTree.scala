@@ -4,7 +4,9 @@ import scala.io.Codec
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.AbstractSeq
 
-import java.io.{File, RandomAccessFile, ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataInput, DataOutputStream, DataOutput}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataInput, DataOutputStream, DataOutput}
+
+import io.github.edadma.cross_platform.{openRandomAccessFile, RandomAccessFile}
 
 trait FileBPlusTreeFormat:
 
@@ -29,7 +31,7 @@ object FileBPlusTree extends FileBPlusTreeFormat:
    * Re-open a previously created (and closed) file created by the class constructor.
    */
   def apply[K: Ordering, V](filename: String, synchronous: Boolean = false): FileBPlusTree[K, V] =
-    val file = new RandomAccessFile(filename, if synchronous then "rws" else "rw")
+    val file = openRandomAccessFile(filename, if synchronous then "rws" else "rw")
 
     file.seek(FILE_ORDER)
     new FileBPlusTree[K, V](file, FILE_ROOT_RECORD, file.readShort)
@@ -51,7 +53,7 @@ class FileBPlusTree[K: Ordering, V](protected val file: RandomAccessFile, protec
    * creates an object to provide access to the root B+ Tree contained within the file at `filename` with a branching factor of `order`.
    */
   def this(filename: String, order: Int, synchronous: Boolean = false) =
-    this(new RandomAccessFile(filename, if synchronous then "rws" else "rw"), FileBPlusTree.FILE_ROOT_RECORD, order)
+    this(openRandomAccessFile(filename, if synchronous then "rws" else "rw"), FileBPlusTree.FILE_ROOT_RECORD, order)
 
   val NUL = 0
 
