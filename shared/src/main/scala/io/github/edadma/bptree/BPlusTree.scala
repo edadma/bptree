@@ -5,6 +5,7 @@ import scala.collection.mutable.{HashMap, ArrayBuffer}
 import scala.collection.immutable.ListMap
 import scala.collection.AbstractIterator
 import scala.util.matching.Regex.Match
+import scala.util.boundary, boundary.break
 
 import Ordering.Implicits.infixOrderingOps
 
@@ -442,14 +443,15 @@ abstract class BPlusTree[K: Ordering, V]:
 
   /** Inserts `keys` into the tree each with an associated value of `null`, and checks that the tree is well constructed after each key is inserted. */
   def insertKeysAndCheck(keys: K*): String =
-    for k <- keys do
-      insert(k, null.asInstanceOf[V])
+    boundary:
+      for k <- keys do
+        insert(k, null.asInstanceOf[V])
 
-      wellConstructed match
-        case "true" =>
-        case reason => return reason + " after inserting key " + k
+        wellConstructed match
+          case "true" =>
+          case reason => break(reason + " after inserting key " + k)
 
-    "true"
+      "true"
 
   /** Performs the B+ tree bulk loading algorithm to insert key/value pairs `kvs` into the tree efficiently. */
   def load(kvs: (K, V)*): Unit =
@@ -797,68 +799,69 @@ abstract class BPlusTree[K: Ordering, V]:
     var nextptr: N = nul
 
     def check(n: N, p: N, d: Int): String =
-      if !(getKeys(n).dropRight(1).zip(getKeys(n).drop(1)).forall { case (n1, n2) => n1 < n2 }) then
-        return "incorrectly ordered keys"
+      boundary:
+        if !(getKeys(n).dropRight(1).zip(getKeys(n).drop(1)).forall { case (n1, n2) => n1 < n2 }) then
+          return "incorrectly ordered keys"
 
-      if getParent(n) != p then return "incorrect parent pointer in level " + d
+        if getParent(n) != p then return "incorrect parent pointer in level " + d
 
-      if isLeaf(n) then
-        if depth == -1 then depth = d
-        else if d != depth then return "leaf nodes not at same depth"
+        if isLeaf(n) then
+          if depth == -1 then depth = d
+          else if d != depth then return "leaf nodes not at same depth"
 
-        if getParent(n) == nul then
-          if nodeLength(n) >= order then return "root leaf node length out of range"
-        else if nodeLength(n) < minlen || nodeLength(n) > order - 1 then return "non-root leaf node length out of range"
+          if getParent(n) == nul then
+            if nodeLength(n) >= order then return "root leaf node length out of range"
+          else if nodeLength(n) < minlen || nodeLength(n) > order - 1 then return "non-root leaf node length out of range"
 
-        if prevnode == nul && first != n then return "incorrect first pointer"
+          if prevnode == nul && first != n then return "incorrect first pointer"
 
-        if prevnode != getPrev(n) then return "incorrect prev pointer"
-        else prevnode = n
+          if prevnode != getPrev(n) then return "incorrect prev pointer"
+          else prevnode = n
 
-        if getNext(n) == nul && last != n then return "incorrect last pointer"
+          if getNext(n) == nul && last != n then return "incorrect last pointer"
 
-        if (nextptr != nul) && (nextptr != n) then return "incorrect next pointer"
-        else nextptr = getNext(n)
+          if (nextptr != nul) && (nextptr != n) then return "incorrect next pointer"
+          else nextptr = getNext(n)
 
-        if getNext(n) != nul && getKeys(n).last > getKey(getNext(n), 0) || getPrev(n) != nul && getKeys(getPrev(n)).last > getKey(n, 0) then
-          return "leaf node last key not less than or equal to next leaf node first key"
-      else
-        if getBranches(n).exists(p => p == nul) then return "null branch pointer"
+          if getNext(n) != nul && getKeys(n).last > getKey(getNext(n), 0) || getPrev(n) != nul && getKeys(getPrev(n)).last > getKey(n, 0) then
+            return "leaf node last key not less than or equal to next leaf node first key"
+        else
+          if getBranches(n).exists(p => p == nul) then return "null branch pointer"
 
-        if getKeys(getBranch(n, 0)).isEmpty then return "empty internal node branch"
+          if getKeys(getBranch(n, 0)).isEmpty then return "empty internal node branch"
 
-        if getKeys(n).isEmpty then return "empty internal node"
+          if getKeys(n).isEmpty then return "empty internal node"
 
-        if !isLeaf(getBranch(n, 0)) then
-          if !(getBranches(n).dropRight(1).zip(getBranches(n).drop(1)).forall { case (n1, n2) => getNext(n1) == n2 }) ||
-            getNext(getBranches(n).last) != nul
-          then return "incorrect next pointer"
+          if !isLeaf(getBranch(n, 0)) then
+            if !(getBranches(n).dropRight(1).zip(getBranches(n).drop(1)).forall { case (n1, n2) => getNext(n1) == n2 }) ||
+              getNext(getBranches(n).last) != nul
+            then return "incorrect next pointer"
 
-          if !(getBranches(n).dropRight(1).zip(getBranches(n).drop(1)).forall { case (n1, n2) => n1 == getPrev(n2) }) ||
-            getPrev(getBranch(n, 0)) != nul
-          then return "incorrect prev pointer"
+            if !(getBranches(n).dropRight(1).zip(getBranches(n).drop(1)).forall { case (n1, n2) => n1 == getPrev(n2) }) ||
+              getPrev(getBranch(n, 0)) != nul
+            then return "incorrect prev pointer"
 
-        if getParent(n) == nul then
-          if getPrev(n) != nul then return "non-null prev pointer"
+          if getParent(n) == nul then
+            if getPrev(n) != nul then return "non-null prev pointer"
 
-          if getNext(n) != nul then return "non-null next pointer"
+            if getNext(n) != nul then return "non-null next pointer"
 
-          if nodeLength(n) < 1 || nodeLength(n) > order - 1 then return "root internal node length out of range"
-        else if nodeLength(n) < minlen || nodeLength(n) > order - 1 then
-          return "non-root internal node length out of range: " + nodeLength(n) + ", " + n
+            if nodeLength(n) < 1 || nodeLength(n) > order - 1 then return "root internal node length out of range"
+          else if nodeLength(n) < minlen || nodeLength(n) > order - 1 then
+            return "non-root internal node length out of range: " + nodeLength(n) + ", " + n
 
-        if !(getKeys(n).zip(getBranches(n).dropRight(1)).forall { case (k, b) => k > rightmost(b) && k > getKey(b, 0) }) then
-          return "left internal node branch not strictly less than: " + n
+          if !(getKeys(n).zip(getBranches(n).dropRight(1)).forall { case (k, b) => k > rightmost(b) && k > getKey(b, 0) }) then
+            return "left internal node branch not strictly less than: " + n
 
-        if !(getKeys(n).zip(getBranches(n).drop(1)).forall { case (k, b) => k <= leftmost(b) && k <= getKey(b, 0) }) then
-          return "right internal node branch not greater than or equal: " + n
+          if !(getKeys(n).zip(getBranches(n).drop(1)).forall { case (k, b) => k <= leftmost(b) && k <= getKey(b, 0) }) then
+            return "right internal node branch not greater than or equal: " + n
 
-        for b <- getBranches(n) do
-          check(b, n, d + 1) match
-            case "true" =>
-            case error  => return error
+          for b <- getBranches(n) do
+            check(b, n, d + 1) match
+              case "true" =>
+              case error  => break(error)
 
-      "true"
+        "true"
     end check
 
     check(root, nul, 0) match
