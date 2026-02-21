@@ -7,7 +7,7 @@ ThisBuild / scalaVersion           := "3.8.1"
 ThisBuild / organization           := "io.github.edadma"
 ThisBuild / organizationName       := "edadma"
 ThisBuild / organizationHomepage   := Some(url("https://github.com/edadma"))
-ThisBuild / version                := "0.0.2"
+ThisBuild / version                := "0.0.3"
 ThisBuild / sonatypeCredentialHost := sonatypeCentralHost
 
 ThisBuild / publishConfiguration := publishConfiguration.value.withOverwrite(true).withChecksums(Vector.empty)
@@ -32,7 +32,7 @@ ThisBuild / developers := List(
   ),
 )
 
-ThisBuild / homepage := Some(url("https://github.com/edadma/bptree"))
+ThisBuild / homepage    := Some(url("https://github.com/edadma/bptree"))
 ThisBuild / description := "A general-purpose B+ tree library for Scala"
 
 ThisBuild / publishTo := sonatypePublishToBundle.value
@@ -51,10 +51,10 @@ lazy val bptree = crossProject(JSPlatform, JVMPlatform, NativePlatform)
         "-language:existentials",
         "-language:dynamics",
       ),
-    libraryDependencies += "io.github.edadma" %%% "cross_platform" % "0.1.2",
+    libraryDependencies += "io.github.edadma" %%% "cross_platform" % "0.1.3",
     libraryDependencies += "org.scalatest"    %%% "scalatest"      % "3.2.19" % "test",
-    publishMavenStyle      := true,
-    Test / publishArtifact := false,
+    publishMavenStyle                          := true,
+    Test / publishArtifact                     := false,
   )
   .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
